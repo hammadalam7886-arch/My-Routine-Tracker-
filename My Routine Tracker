@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RoutinePRO: Ultimate Master</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    
+    <link id="dynamic-manifest" rel="manifest" href="">
+
+    <style>
+        /* --- THEMES --- */
+        :root {
+            --bg-body: #f8fafc; --bg-card: #ffffff; --text-main: #0f172a;
+            --text-muted: #64748b; --border-color: #e2e8f0; --accent: #3b82f6;
+        }
+        [data-theme="dark"] {
+            --bg-body: #0f172a; --bg-card: #1e293b; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --border-color: #334155; --accent: #60a5fa;
+        }
+
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); color: var(--text-main); overscroll-behavior-y: contain; padding-bottom: 80px; transition: all 0.3s; }
+        .card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: all 0.3s; }
+        .input-box { background: var(--bg-body); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 12px; padding: 12px; width: 100%; font-size: 14px; transition: all 0.3s;}
+        .input-box:focus { border-color: var(--accent); outline: none; }
+        
+        /* Category Badges */
+        .badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 999px; font-weight: 600; text-transform: uppercase; }
+        .cat-work { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+        .cat-health { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        .cat-study { background: rgba(168, 85, 247, 0.2); color: #a855f7; }
+        .cat-personal { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
+
+        /* Auto-Highlight Student & Hustle Mode */
+        .urgent-task { border-left: 4px solid #ef4444 !important; background: rgba(239, 68, 68, 0.05); }
+        .hustle-task { border-left: 4px solid #10b981 !important; background: rgba(16, 185, 129, 0.05); }
+        
+        /* Mic Recording Pulse */
+        @keyframes pulse-mic { 0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); } 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); } }
+        .recording { animation: pulse-mic 1s infinite; background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important;}
+
+        /* Confetti */
+        .confetti { position: fixed; width: 10px; height: 10px; opacity: 0; z-index: 1000; pointer-events: none; animation: fall 2s ease-out forwards; }
+        @keyframes fall { 0% { transform: translateY(-100px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen">
+
+    <div class="w-full max-w-md flex flex-col pt-6 px-4 gap-4">
+        
+        <header class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-[Poppins] font-black tracking-tight" style="color: var(--accent);">ROUTINE<span class="text-[var(--text-main)]">PRO</span></h1>
+                <p class="text-[var(--text-muted)] text-xs font-medium" id="date-display">Loading...</p>
+            </div>
+            <div class="flex gap-2">
+                <button id="install-btn" class="hidden bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-pulse">📲 Install</button>
+                <button onclick="exportData()" class="p-2 rounded-full card text-[var(--text-muted)] text-sm">💾</button>
+                <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-full card text-[var(--text-muted)] text-sm">🌙</button>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-3 gap-2">
+            <div class="card p-2 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+                <span class="text-xl mb-1">🔥</span>
+                <span class="text-[10px] text-[var(--text-muted)] font-bold">STREAK</span>
+                <span class="text-lg font-black" id="streak-display">0</span>
+            </div>
+            <div class="card p-2 rounded-xl flex flex-col items-center justify-center text-center shadow-sm border-b-2 border-blue-500">
+                <span class="text-xl mb-1">⭐</span>
+                <span class="text-[10px] text-[var(--text-muted)] font-bold">LEVEL</span>
+                <span class="text-lg font-black" id="level-display">1</span>
+            </div>
+            <div class="card p-2 rounded-xl flex flex-col items-center justify-center text-center shadow-sm">
+                <span class="text-xl mb-1">✨</span>
+                <span class="text-[10px] text-[var(--text-muted)] font-bold">XP</span>
+                <span class="text-lg font-black"><span id="xp-display">0</span>/100</span>
+            </div>
+        </div>
+
+        <div class="card p-3 rounded-xl shadow-sm">
+            <div class="flex justify-between text-[10px] font-bold text-[var(--text-muted)] mb-1">
+                <span>DAILY PROGRESS</span>
+                <span id="progress-text">0%</span>
+            </div>
+            <div class="w-full h-2 bg-[var(--bg-body)] rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-500" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 bg-[var(--bg-card)] border border-[var(--border-color)] p-1 rounded-xl">
+            <button onclick="switchTab('tasks')" id="tab-tasks" class="flex-1 py-2 text-xs font-bold rounded-lg bg-blue-500 text-white transition-all">Tasks & Study</button>
+            <button onclick="switchTab('hustle')" id="tab-hustle" class="flex-1 py-2 text-xs font-bold rounded-lg text-[var(--text-muted)] transition-all">Side Hustle</button>
+            <button onclick="switchTab('settings')" id="tab-settings" class="flex-1 py-2 text-xs font-bold rounded-lg text-[var(--text-muted)] transition-all">Settings</button>
+        </div>
+
+        <div id="view-tasks" class="flex flex-col gap-4">
+            
+            <div class="card p-3 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center text-xl">🍅</div>
+                    <div><h3 class="font-bold text-sm">Focus Timer</h3><p class="text-xl font-[Poppins] font-black text-[var(--accent)]" id="timer-display">25:00</p></div>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="toggleTimer()" id="timer-btn" class="bg-[var(--bg-body)] border border-[var(--border-color)] px-3 py-2 rounded-xl text-xs font-bold">START</button>
+                </div>
+            </div>
+
+            <form id="task-form" class="card p-4 flex flex-col gap-3">
+                <div class="flex gap-2">
+                    <input type="text" id="task-title" required placeholder="What needs to be done?" class="input-box">
+                    <button type="button" onclick="startVoiceInput()" id="mic-btn" class="input-box w-auto px-4 rounded-xl" title="Voice Input">🎤</button>
+                </div>
+                <div class="flex gap-2">
+                    <input type="time" id="task-time" required class="input-box w-1/3 text-xs px-2">
+                    <select id="task-category" class="input-box w-1/3 text-xs px-2">
+                        <option value="work">💼 Work</option>
+                        <option value="health">❤️ Health</option>
+                        <option value="study">📚 Study</option>
+                        <option value="personal">👤 Personal</option>
+                    </select>
+                    <button type="submit" class="w-1/3 bg-blue-600 rounded-xl text-white text-xs font-bold active:scale-95 transition-transform">+ ADD</button>
+                </div>
+            </form>
+
+            <div>
+                <h2 class="text-xs font-bold text-[var(--text-muted)] mb-2 tracking-widest">ACTIVE TASKS</h2>
+                <div id="active-tasks" class="flex flex-col gap-2"></div>
+            </div>
+            <div class="opacity-70 mt-2">
+                <h2 class="text-xs font-bold text-[var(--text-muted)] mb-2 tracking-widest">COMPLETED</h2>
+                <div id="completed-tasks" class="flex flex-col gap-2"></div>
+            </div>
+        </div>
+
+        <div id="view-hustle" class="hidden flex flex-col gap-4">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="card p-4 text-center">
+                    <span class="text-2xl">🔗</span>
+                    <h3 class="text-[10px] font-bold text-[var(--text-muted)] mt-1">AFFILIATE LINKS</h3>
+                    <p class="text-3xl font-black text-green-500" id="links-shared">0</p>
+                </div>
+                <div class="card p-4 text-center">
+                    <span class="text-2xl">💵</span>
+                    <h3 class="text-[10px] font-bold text-[var(--text-muted)] mt-1">EST. EARNINGS</h3>
+                    <p class="text-3xl font-black text-green-500">$<span id="total-earnings">0.00</span></p>
+                </div>
+            </div>
+            <div class="card p-4">
+                <h3 class="font-bold text-sm mb-3">Log Hustle Activity</h3>
+                <div class="flex gap-2">
+                    <button onclick="logActivity('link')" class="flex-1 bg-[var(--bg-body)] border border-[var(--border-color)] py-3 rounded-lg text-xs font-bold hover:bg-green-600 hover:text-white transition-colors">+ Shared Link</button>
+                    <button onclick="logActivity('earn')" class="flex-1 bg-[var(--bg-body)] border border-[var(--border-color)] py-3 rounded-lg text-xs font-bold hover:bg-green-600 hover:text-white transition-colors">+ Add $5 Earnings</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-settings" class="hidden flex flex-col gap-4">
+            <div class="card p-4">
+                <h3 class="font-bold text-sm mb-1 text-blue-500">🤖 Telegram Bot Alerts</h3>
+                <p class="text-[10px] text-[var(--text-muted)] mb-3">Get automated messages when you complete tasks.</p>
+                <input type="text" id="tg-token" placeholder="Bot Token (from BotFather)" class="input-box mb-2 text-xs">
+                <input type="text" id="tg-chatid" placeholder="Your Chat ID" class="input-box mb-3 text-xs">
+                <button onclick="saveTelegram()" class="w-full bg-blue-600 text-white py-2 rounded-xl text-xs font-bold transition-colors">Save Bot Settings</button>
+            </div>
+            <button onclick="clearAllData()" class="text-xs text-red-500 font-bold underline text-center mt-2">Clear All App Data</button>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. DYNAMIC PWA GENERATION ---
+        const manifestData = {
+            "name": "RoutinePRO Ultimate", "short_name": "RoutinePRO", "start_url": ".", "display": "standalone",
+            "background_color": "#0f172a", "theme_color": "#0f172a",
+            "icons": [{"src": "https://cdn-icons-png.flaticon.com/512/3208/3208726.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}]
+        };
+        document.getElementById('dynamic-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifestData)], {type: 'application/json'}));
+
+        const swCode = `self.addEventListener('install', e => self.skipWaiting()); self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => new Response('Offline mode active.'))));`;
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register(URL.createObjectURL(new Blob([swCode], {type: 'text/javascript'})));
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e; document.getElementById('install-btn').classList.remove('hidden');
+        });
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; document.getElementById('install-btn').classList.add('hidden'); deferredPrompt = null; }
+        });
+
+        // --- 2. STATE MANAGEMENT ---
+        let tasks = [];
+        let stats = { xp: 0, level: 1, streak: 0, lastDate: '' };
+        let hustleStats = { links: 0, earnings: 0 };
+        let settings = { theme: 'dark', tgToken: '', tgChatId: '' };
+
+        // --- 3. AUDIO & CONFETTI (GAMIFICATION) ---
+        function playDingSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(800, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1500, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
+        }
+
+        function fireConfetti() {
+            const colors = ['#3b82f6', '#ef4444', '#22c55e', '#a855f7', '#f59e0b'];
+            for (let i = 0; i < 30; i++) {
+                const c = document.createElement('div'); c.className = 'confetti';
+                c.style.left = Math.random() * 100 + 'vw';
+                c.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                c.style.animationDuration = (Math.random() * 1 + 1) + 's';
+                c.style.animationDelay = Math.random() * 0.2 + 's';
+                document.body.appendChild(c); setTimeout(() => c.remove(), 2500);
+            }
+        }
+
+        // --- 4. VOICE INPUT ---
+        window.startVoiceInput = function() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) return alert("Voice input not supported in this browser.");
+            const recognition = new SpeechRecognition();
+            const micBtn = document.getElementById('mic-btn');
+            recognition.onstart = () => micBtn.classList.add('recording');
+            recognition.onresult = (e) => document.getElementById('task-title').value = e.results[0][0].transcript;
+            recognition.onend = () => micBtn.classList.remove('recording');
+            recognition.onerror = () => micBtn.classList.remove('recording');
+            recognition.start();
+        };
+
+        // --- 5. CORE LOGIC & UI ---
+        function loadData() {
+            const st = localStorage.getItem('ru_tasks');
+            if(st) tasks = JSON.parse(st);
+            if(localStorage.getItem('ru_stats')) stats = JSON.parse(localStorage.getItem('ru_stats'));
+            if(localStorage.getItem('ru_hustle')) hustleStats = JSON.parse(localStorage.getItem('ru_hustle'));
+            if(localStorage.getItem('ru_settings')) {
+                settings = JSON.parse(localStorage.getItem('ru_settings'));
+                document.getElementById('tg-token').value = settings.tgToken || '';
+                document.getElementById('tg-chatid').value = settings.tgChatId || '';
+            }
+            
+            checkDailyStreak();
+            applyTheme();
+            document.getElementById('date-display').innerText = new Date().toLocaleDateString('en-US', {weekday:'long', month:'short', day:'numeric'});
+            updateHustleUI(); renderTasks();
+        }
+
+        function saveData() {
+            localStorage.setItem('ru_tasks', JSON.stringify(tasks));
+            localStorage.setItem('ru_stats', JSON.stringify(stats));
+            localStorage.setItem('ru_hustle', JSON.stringify(hustleStats));
+            localStorage.setItem('ru_settings', JSON.stringify(settings));
+        }
+
+        function switchTab(tabId) {
+            ['tasks', 'hustle', 'settings'].forEach(t => {
+                document.getElementById(`view-${t}`).classList.add('hidden');
+                document.getElementById(`tab-${t}`).classList.remove('bg-blue-500', 'text-white');
+                document.getElementById(`tab-${t}`).classList.add('text-[var(--text-muted)]');
+            });
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('bg-blue-500', 'text-white');
+            document.getElementById(`tab-${tabId}`).classList.remove('text-[var(--text-muted)]');
+        }
+
+        function toggleTheme() {
+            settings.theme = settings.theme === 'dark' ? 'light' : 'dark';
+            applyTheme(); saveData();
+        }
+
+        function applyTheme() {
+            document.documentElement.setAttribute('data-theme', settings.theme);
+            document.getElementById('theme-btn').innerText = settings.theme === 'dark' ? '☀️' : '🌙';
+        }
+
+        window.exportData = function() {
+            const dataStr = JSON.stringify({ tasks, stats, hustleStats }, null, 2);
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([dataStr], { type: "application/json" }));
+            a.download = `RoutinePRO_Backup.json`; a.click();
+        };
+
+        function clearAllData() {
+            if(confirm("Delete all data? This cannot be undone.")) { localStorage.clear(); location.reload(); }
+        }
+
+        // --- 6. GAMIFICATION ENGINE ---
+        function checkDailyStreak() {
+            const today = new Date().toDateString();
+            if (stats.lastDate !== today) {
+                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                if (stats.lastDate !== yesterday.toDateString()) stats.streak = 0; // Break streak
+                stats.lastDate = today; saveData();
+            }
+        }
+
+        function addXP(amount) {
+            stats.xp += amount;
+            if (stats.xp >= 100) { stats.level++; stats.xp -= 100; fireConfetti(); alert(`🎉 LEVEL UP! You are Level ${stats.level}!`); }
+            
+            const today = new Date().toDateString();
+            if (amount > 0 && stats.streak === 0) stats.streak = 1; // Start streak
+            saveData(); updateStatsUI();
+        }
+
+        function updateStatsUI() {
+            document.getElementById('level-display').innerText = stats.level;
+            document.getElementById('xp-display').innerText = stats.xp;
+            document.getElementById('streak-display').innerText = stats.streak;
+
+            const total = tasks.length; const comp = tasks.filter(t => t.status === 'completed').length;
+            const pct = total === 0 ? 0 : Math.round((comp / total) * 100);
+            document.getElementById('progress-text').innerText = `${pct}%`;
+            document.getElementById('progress-bar').style.width = `${pct}%`;
+        }
+
+        // --- 7. TELEGRAM & HUSTLE ---
+        function saveTelegram() {
+            settings.tgToken = document.getElementById('tg-token').value.trim();
+            settings.tgChatId = document.getElementById('tg-chatid').value.trim();
+            saveData(); alert("Telegram Settings Saved!"); sendTelegramMessage("✅ RoutinePRO Connected!");
+        }
+
+        function sendTelegramMessage(msg) {
+            if(!settings.tgToken || !settings.tgChatId) return;
+            fetch(`https://api.telegram.org/bot${settings.tgToken}/sendMessage?chat_id=${settings.tgChatId}&text=${encodeURIComponent(msg)}`).catch(()=>{});
+        }
+
+        function logActivity(type) {
+            if(type === 'link') hustleStats.links++; if(type === 'earn') { hustleStats.earnings += 5; sendTelegramMessage(`💰 $5 Earned! Total: $${hustleStats.earnings}`); }
+            saveData(); updateHustleUI();
+        }
+
+        function updateHustleUI() {
+            document.getElementById('links-shared').innerText = hustleStats.links;
+            document.getElementById('total-earnings').innerText = hustleStats.earnings.toFixed(2);
+        }
+
+        // --- 8. TASK MANAGEMENT ---
+        document.getElementById('task-form').onsubmit = (e) => {
+            e.preventDefault();
+            const title = document.getElementById('task-title').value;
+            const time = document.getElementById('task-time').value;
+            const category = document.getElementById('task-category').value;
+            tasks.push({ id: Date.now().toString(), title, time, category, status: 'active' });
+            saveData(); renderTasks(); document.getElementById('task-title').value = '';
+        };
+
+        window.toggleTask = function(id) {
+            const t = tasks.find(x => x.id === id);
+            if(t) {
+                if(t.status === 'active') {
+                    t.status = 'completed'; playDingSound(); fireConfetti(); addXP(10);
+                    sendTelegramMessage(`🏆 Completed: ${t.title}`);
+                } else {
+                    t.status = 'active'; stats.xp = Math.max(0, stats.xp - 10);
+                }
+                saveData(); renderTasks();
+            }
+        }
+
+        window.deleteTask = function(id) { tasks = tasks.filter(t => t.id !== id); saveData(); renderTasks(); }
+
+        window.moveTask = function(index, dir) {
+            if (index + dir >= 0 && index + dir < tasks.length) {
+                const temp = tasks[index]; tasks[index] = tasks[index + dir]; tasks[index + dir] = temp;
+                saveData(); renderTasks();
+            }
+        };
+
+        function renderTasks() {
+            const aCont = document.getElementById('active-tasks'); const cCont = document.getElementById('completed-tasks');
+            aCont.innerHTML = ''; cCont.innerHTML = '';
+
+            tasks.forEach((task, index) => {
+                const isC = task.status === 'completed';
+                const lowerT = task.title.toLowerCase();
+                let extraC = '';
+                if(!isC && (lowerT.includes('project') || lowerT.includes('exam') || lowerT.includes('urgent') || lowerT.includes('sana') || lowerT.includes('mizan'))) extraC = 'urgent-task';
+                else if(!isC && (lowerT.includes('affiliate') || lowerT.includes('link') || lowerT.includes('earn'))) extraC = 'hustle-task';
+
+                const el = document.createElement('div');
+                el.className = `card p-3 flex justify-between items-center gap-2 ${extraC} ${isC ? 'opacity-50' : ''}`;
+                el.innerHTML = `
+                    <div class="flex items-center gap-3 w-3/4">
+                        <input type="checkbox" ${isC ? 'checked' : ''} onchange="toggleTask('${task.id}')" class="w-5 h-5 accent-blue-500 shrink-0">
+                        <div class="flex flex-col truncate">
+                            <span class="text-sm font-bold truncate ${isC ? 'line-through text-[var(--text-muted)]' : ''}">${task.title}</span>
+                            <div class="flex gap-2 mt-1 items-center">
+                                <span class="text-[10px] text-[var(--text-muted)] font-bold">⏱️ ${task.time}</span>
+                                <span class="badge cat-${task.category}">${task.category}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1 shrink-0">
+                        ${!isC ? `
+                        <div class="flex gap-1 justify-end">
+                            <button onclick="moveTask(${index}, -1)" class="p-1 rounded bg-[var(--bg-body)] text-[var(--text-muted)] text-[10px]">▲</button>
+                            <button onclick="moveTask(${index}, 1)" class="p-1 rounded bg-[var(--bg-body)] text-[var(--text-muted)] text-[10px]">▼</button>
+                        </div>` : ''}
+                        <button onclick="deleteTask('${task.id}')" class="text-red-400 text-xs p-1 mt-auto text-right">🗑️</button>
+                    </div>
+                `;
+                if(isC) cCont.appendChild(el); else aCont.appendChild(el);
+            });
+            if(aCont.innerHTML==='') aCont.innerHTML = '<p class="text-[10px] text-center text-[var(--text-muted)] italic">No active tasks.</p>';
+            if(cCont.innerHTML==='') cCont.innerHTML = '<p class="text-[10px] text-center text-[var(--text-muted)] italic">Completed tasks appear here.</p>';
+            updateStatsUI();
+        }
+
+        // --- 9. POMODORO TIMER ---
+        let tInt; let tLeft = 1500; let tRun = false;
+        function toggleTimer() {
+            const btn = document.getElementById('timer-btn');
+            if(tRun) { clearInterval(tInt); btn.innerText="START"; btn.classList.remove('text-red-400'); } 
+            else {
+                tInt = setInterval(() => {
+                    if(tLeft > 0) {
+                        tLeft--; const m = Math.floor(tLeft/60).toString().padStart(2,'0'); const s = (tLeft%60).toString().padStart(2,'0');
+                        document.getElementById('timer-display').innerText = `${m}:${s}`;
+                    } else {
+                        clearInterval(tInt); playDingSound(); alert("Focus complete!"); sendTelegramMessage("🍅 Focus Session Completed!");
+                        tLeft = 1500; document.getElementById('timer-display').innerText = "25:00";
+                        tRun = false; btn.innerText="START"; btn.classList.remove('text-red-400');
+                    }
+                }, 1000);
+                btn.innerText="PAUSE"; btn.classList.add('text-red-400');
+            }
+            tRun = !tRun;
+        }
+
+        // BOOT
+        loadData();
+    </script>
+</body>
+</html>
+
+
